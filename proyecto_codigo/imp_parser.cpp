@@ -3,11 +3,11 @@
 #include "imp_parser.hh"
 
 
-const char* Token::token_names[37] = {
+const char* Token::token_names[36] = {
   "LPAREN" , "RPAREN", "PLUS", "MINUS", "MULT","DIV","EXP","LT","LTEQ","EQ",
   "NUM", "ID", "PRINT", "SEMICOLON", "COMMA", "ASSIGN", "CONDEXP", "IF", "THEN", "ELSE", "ENDIF", "WHILE", "DO",
   "ENDWHILE", "ERR", "END", "VAR" , "NOT", "TRUE", "FALSE", "AND", "OR"
-  "FOR", "COLON" , "ENDFOR", "COMENT","NEWLINE"};
+  "FOR", "COLON" , "ENDFOR", "COMENT"};
 
 Token::Token(Type type):type(type) { lexema = ""; }
 
@@ -45,7 +45,6 @@ Scanner::Scanner(string s):input(s),first(0),current(0) {
   reserved["or"] = Token::OR;
   reserved["for"] = Token::FOR;
   reserved["endfor"] = Token::ENDFOR;
-  reserved["\n"]= Token::NEWLINE; 
   
 }
 
@@ -85,9 +84,24 @@ Token* Scanner::nextToken() {
       break;     
     case '/':
       c = nextChar(); 
-      if(c =='/') token = new Token(Token::COMENT);
-      else{ rollBack(); token = new Token(Token::DIV); } 
-      break;
+      if(c =='/'){  
+        c = nextChar(); 
+        while( c != '\n'){
+          c = nextChar(); 
+        }
+        if(c == '\n') {
+          cout << "salto de linea"<<endl;
+          cout<< current<<" - " << input[current] <<endl;
+          rollBack();
+          cout<< current<<" - " << input[current] <<endl;
+        }
+        token = new Token(Token::COMENT,getLexema());
+      } 
+      else{ 
+        rollBack(); 
+        token = new Token(Token::DIV);
+      } 
+      break;         
     case ';': token = new Token(Token::SEMICOLON); break;
     case ',': token = new Token(Token::COMMA); break;
     case '!': token = new Token(Token::NOT); break;
@@ -320,13 +334,7 @@ Stm* Parser::parseStatement() {
     s = new ForStatement(var,e,e2,tb);
   }else if(match(Token::COMENT)){
     //se mueva hasta el final y si es salto de linea 
-    if(!match(Token::END) || !match(Token::NEWLINE)){
-      current++;
-
-    }else{
-      cout<<current->lexema<<endl;
-      cout<<"final"<<endl;
-    }
+    cout<<previous->lexema<<endl;
   }
   else {
 

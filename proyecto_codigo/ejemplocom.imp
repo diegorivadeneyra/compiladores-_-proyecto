@@ -1,4 +1,5 @@
-var int x, n;// papai
-n = 10; 
-x = 0; 
-print(10** x) 
+var int x, n;
+x = 1;
+n = 10;
+
+x = n/x 
