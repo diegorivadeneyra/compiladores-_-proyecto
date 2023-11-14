@@ -1,0 +1,4 @@
+var int x, n;// papai
+n = 10; 
+x = 0; 
+print(10** x) 

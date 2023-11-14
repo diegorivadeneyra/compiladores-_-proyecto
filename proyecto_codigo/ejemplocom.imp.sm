@@ -1,0 +1,8 @@
+push  10
+store 1
+push  0
+store 0
+push  10
+load 0
+
+print

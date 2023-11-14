@@ -3,11 +3,11 @@
 #include "imp_parser.hh"
 
 
-const char* Token::token_names[35] = {
+const char* Token::token_names[37] = {
   "LPAREN" , "RPAREN", "PLUS", "MINUS", "MULT","DIV","EXP","LT","LTEQ","EQ",
   "NUM", "ID", "PRINT", "SEMICOLON", "COMMA", "ASSIGN", "CONDEXP", "IF", "THEN", "ELSE", "ENDIF", "WHILE", "DO",
   "ENDWHILE", "ERR", "END", "VAR" , "NOT", "TRUE", "FALSE", "AND", "OR"
-  "FOR", "COLON" , "ENDFOR" };
+  "FOR", "COLON" , "ENDFOR", "COMENT","NEWLINE"};
 
 Token::Token(Type type):type(type) { lexema = ""; }
 
@@ -45,6 +45,7 @@ Scanner::Scanner(string s):input(s),first(0),current(0) {
   reserved["or"] = Token::OR;
   reserved["for"] = Token::FOR;
   reserved["endfor"] = Token::ENDFOR;
+  reserved["\n"]= Token::NEWLINE; 
   
 }
 
@@ -53,7 +54,7 @@ Token* Scanner::nextToken() {
   char c;
   // consume whitespaces
   c = nextChar();
-  while (c == ' ' || c == '\t'  || c == '\n') c = nextChar();
+  while (c == ' ' || c == '\t' || c == '\n') c = nextChar();
   if (c == '\0') return new Token(Token::END);
   startLexema();
   if (isdigit(c)) {
@@ -82,7 +83,11 @@ Token* Scanner::nextToken() {
       if (c == '*') token = new Token(Token::EXP);
       else { rollBack(); token = new Token(Token::MULT); }
       break;     
-    case '/': token = new Token(Token::DIV); break;
+    case '/':
+      c = nextChar(); 
+      if(c =='/') token = new Token(Token::COMENT);
+      else{ rollBack(); token = new Token(Token::DIV); } 
+      break;
     case ';': token = new Token(Token::SEMICOLON); break;
     case ',': token = new Token(Token::COMMA); break;
     case '!': token = new Token(Token::NOT); break;
@@ -313,8 +318,18 @@ Stm* Parser::parseStatement() {
     tb = parseBody();
     if (!match(Token::ENDFOR)) parserError("Esperaba ENDFOR en for");
     s = new ForStatement(var,e,e2,tb);
+  }else if(match(Token::COMENT)){
+    //se mueva hasta el final y si es salto de linea 
+    if(!match(Token::END) || !match(Token::NEWLINE)){
+      current++;
+
+    }else{
+      cout<<current->lexema<<endl;
+      cout<<"final"<<endl;
+    }
   }
   else {
+
     cout << "No se encontro Statement" << endl;
     exit(0);
   }
