@@ -86,15 +86,10 @@ Token* Scanner::nextToken() {
       c = nextChar(); 
       if(c =='/'){  
         c = nextChar(); 
-        while( c != '\n'){
+        while(c != '\0' && c != '\n'){
           c = nextChar(); 
         }
-        if(c == '\n') {
-          cout << "salto de linea"<<endl;
-          cout<< current<<" - " << input[current] <<endl;
-          rollBack();
-          cout<< current<<" - " << input[current] <<endl;
-        }
+        rollBack();
         token = new Token(Token::COMENT,getLexema());
       } 
       else{ 
@@ -244,6 +239,9 @@ VarDec* Parser::parseVarDec() {
       vars.push_back(var);
     }
     if (!match(Token::SEMICOLON)) parserError("Expecting semicolon at end of var declaration");
+    if (match(Token::COMENT)){
+      // do nothing
+    }
     vd = new VarDec(type,vars);
   }
   return vd;
@@ -267,7 +265,13 @@ StatementList* Parser::parseStatementList() {
   StatementList* p = new StatementList();
   p->add(parseStatement());
   while(match(Token::SEMICOLON)) {
+    while(match(Token::COMENT)){
+      //do nothing
+    }
     p->add(parseStatement());
+  }
+  while(match(Token::COMENT)){
+      //do nothing
   }
   return p;
 }

@@ -1,8 +1,10 @@
-push  10
-store 1
 push  1
 store 0
+push  10
+store 1
 load 1
 load 0
 div
 store 0
+load 0
+print
