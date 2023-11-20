@@ -1,0 +1,7 @@
+var int accum;
+accum = 1;
+
+for x : 5, 10 do
+    accum = accum + x;
+    print(accum)
+endfor
