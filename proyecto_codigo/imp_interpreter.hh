@@ -12,6 +12,8 @@ using namespace std;
 class ImpInterpreter : public ImpVisitor {
 private:
   Environment<int> env;
+  bool breakFlag = false; 
+  bool continueFlag = false; 
 
 public:
   int interpret(Program*);
@@ -24,7 +26,10 @@ public:
   int visit(PrintStatement*);
   int visit(IfStatement*);
   int visit(WhileStatement*);
+  int visit(DoWhileStatement*);
   int visit(ForStatement*);
+  int visit(ContinueStatement*);
+  int visit(BreakStatement*);
   
   int visit(BinaryExp* e);
   int visit(UnaryExp* e);
