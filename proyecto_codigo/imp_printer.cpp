@@ -1,4 +1,5 @@
 #include "imp_printer.hh"
+#include "imp.hh"
 
 void ImpPrinter::print(Program* p) {
   p->accept(this);
@@ -81,6 +82,15 @@ int ImpPrinter::visit(WhileStatement* s) {
   return 0;
 }
 
+int ImpPrinter::visit(DoWhileStatement* s) {
+  cout << "do" << endl; 
+  s->body->accept(this);
+  cout << "while (";
+  s->cond->accept(this);
+  cout << ")" << endl;
+  return 0;
+}
+
 int ImpPrinter::visit(ForStatement* s) {
   cout << "for " << s->id << " : ";
   s->e1->accept(this);
@@ -89,6 +99,16 @@ int ImpPrinter::visit(ForStatement* s) {
   cout << "do" << endl;
   s->body->accept(this);
   cout << "endwhile";
+  return 0;
+}
+
+int ImpPrinter::visit(ContinueStatement* s) {
+  cout << "continue";
+  return 0;
+}
+
+int ImpPrinter::visit(BreakStatement* s) {
+  cout << "break";
   return 0;
 }
 

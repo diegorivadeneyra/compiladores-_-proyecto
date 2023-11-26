@@ -1,4 +1,5 @@
 #include "imp_codegen.hh"
+#include "imp.hh"
 
 void ImpCodeGen::codegen(string label, string instr) {
   if (label !=  nolabel)
@@ -111,6 +112,8 @@ int ImpCodeGen::visit(IfStatement* s) {
 int ImpCodeGen::visit(WhileStatement* s) {
   string l1 = next_label();
   string l2 = next_label();
+  this->breakLabel = l2; 
+  this->continueLabel = l1; 
 
   codegen(l1,"skip");
   s->cond->accept(this);
@@ -118,7 +121,26 @@ int ImpCodeGen::visit(WhileStatement* s) {
   s->body->accept(this);
   codegen(nolabel,"goto",l1);
   codegen(l2,"skip");
+  this->breakLabel = ""; 
+  this->continueLabel = ""; 
 
+  return 0;
+}
+
+int ImpCodeGen::visit(DoWhileStatement* s) {
+  string l1 = next_label();
+  string l2 = next_label();
+  this->breakLabel = l2; 
+  this->continueLabel = l1; 
+
+  codegen(l1,"skip");
+  s->body->accept(this);
+  s->cond->accept(this);
+  codegen(nolabel,"jmpz",l2);
+  codegen(nolabel,"goto",l1);
+  codegen(l2,"skip");
+  this->breakLabel = ""; 
+  this->continueLabel = ""; 
   return 0;
 }
 
@@ -152,6 +174,16 @@ int ImpCodeGen::visit(ForStatement* s) {
 
   // Etiqueta de fin del bucle
   codegen(loopEnd, "skip");
+  return 0;
+}
+
+int ImpCodeGen::visit(ContinueStatement* s) {
+  codegen(nolabel,"goto", this->continueLabel);
+  return 0;
+}
+
+int ImpCodeGen::visit(BreakStatement* s) {
+  codegen(nolabel,"goto", this->breakLabel);
   return 0;
 }
 

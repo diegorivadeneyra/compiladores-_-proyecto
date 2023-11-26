@@ -2,10 +2,6 @@ push  6
 store 2
 push  0
 store 3
-push  0
-load 2
-lt
-store 0
 load 2
 push  0
 le

@@ -1,0 +1,16 @@
+var bool b;
+var int x, accum;
+x = 5;
+accum = 0; 
+b = false;
+while !b do
+  accum = accum + x;
+  x = x - 1;
+  b = x <= 0;
+  if (x <= 3) 
+    then continue 
+  endif;
+  print(x)
+endwhile;
+print(accum);
+print(x)

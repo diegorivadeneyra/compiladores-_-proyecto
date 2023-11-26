@@ -24,7 +24,10 @@ public:
   int visit(PrintStatement*);
   int visit(IfStatement*);
   int visit(WhileStatement*);
+  int visit(DoWhileStatement*);
   int visit(ForStatement*);
+  int visit(ContinueStatement*);
+  int visit(BreakStatement*);
   
   int visit(BinaryExp* e);
   int visit(UnaryExp* e);
@@ -38,6 +41,8 @@ private:
   std::ostringstream code;
   string nolabel;
   int current_label;
+  string breakLabel = ""; 
+  string continueLabel= ""; 
   Environment<int> direcciones;
   int siguiente_direccion, mem_locals;
   void codegen(string label, string instr);
