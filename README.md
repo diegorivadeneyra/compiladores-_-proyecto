@@ -40,6 +40,26 @@ case '/':
       }
       break;
 ```
+Ademas, se modifica en el parser para que cuando recepcione los TOKEN de comentarios simplemente los ignore o los pase de largo.
+Este cambio se realiza en el StatementList asi se verifica el final de cada linea si existe un ";" verifica si existe un comentario luego para obviarlo. Asimismo, si no encuentra un ";" significa que es la ultima instruccion y tambien revisa la existencia de algun comentario para obivviarlo. 
+
+```
+StatementList *Parser::parseStatementList() {
+  StatementList *p = new StatementList();
+  p->add(parseStatement());
+  while (match(Token::SEMICOLON)) {
+    while (match(Token::COMENT)) {
+      // do nothing
+    }
+    p->add(parseStatement());
+  }
+  while (match(Token::COMENT)) {
+    // do nothing
+  }
+  return p;
+}
+
+```
 
 
 
