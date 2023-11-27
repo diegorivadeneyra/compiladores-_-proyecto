@@ -128,3 +128,85 @@ En este código, se ejecuta primero el body y luego se evalúa la expresión. Si
 
 
 ### 4-Sentencia break y continue
+### Agregar las instrucciones "Break" y "Continue"
+
+Para incorporar las instrucciones "Break" y "Continue", se introdujeron los tokens correspondientes en el código:
+
+```cpp
+"CONTINUE", "BREAK"
+```
+
+Además, se crearon las clases `ContinueStatement` y `BreakStatement`, las cuales no contienen body ni expresión.
+
+Dentro del analizador léxico (scanner), se reservaron las palabras "continue" y "break" para asignarles los tokens correspondientes. En el analizador sintáctico, se agregaron las siguientes líneas al método `parseStatement`:
+
+```cpp
+} else if(match(Token::CONTINUE)){
+    s = new ContinueStatement();
+  } else if(match(Token::BREAK)){
+    s = new BreakStatement();
+  }
+```
+
+En el `typechecker`, se añadieron los correspondientes visitantes para estas nuevas clases, aunque al no tener variables que requieran verificación de tipo, los visitantes quedaron vacíos.
+
+En el `interpreter`, se introdujeron las variables `continueFlag` y `breakFlag` en la clase `ImpInterpreter`, las cuales sirven para la conexión entre `ContinueStatement`/`BreakStatement` y su bucle padre. Los visitantes de estos nuevos Statements dentro del interpreter modifican estas variables:
+
+```cpp
+int ImpInterpreter::visit(ContinueStatement *s) {
+  this->continueFlag = true;
+  return 0;
+}
+
+int ImpInterpreter::visit(BreakStatement *s) {
+  this->breakFlag = true;
+  return 0;
+}
+```
+
+Esto llevó a modificar los visitantes de `WhileStatement` y `DoWhileStatement` para incorporar una condición correspondiente al `breakFlag`, permitiendo que, si es verdadero, se restablezca a falso y se rompa el bucle:
+
+```cpp
+int ImpInterpreter::visit(WhileStatement *s) {
+  while (s->cond->accept(this)) {
+    if (this->breakFlag == true) {
+      breakFlag = false;
+      break;
+    }
+    s->body->accept(this);
+  }
+  return 0;
+}
+```
+
+En el caso de `StatementList`, este Statement que lee los contenidos del body también tuvo que modificarse. En el caso de `break` y `continue`, todo el código que siga debe omitirse. Para esto, el `continueFlag` toma el valor de falso si su condición se cumple, permitiendo que el bucle while continúe y solo se salten las instrucciones en caso de que el flag sea true.
+
+```cpp
+int ImpInterpreter::visit(StatementList *s) {
+  list<Stm *>::iterator it;
+  for (it = s->slist.begin(); it != s->slist.end(); ++it) {
+    if (this->breakFlag == true || this->continueFlag == true) {
+      this->continueFlag = false; 
+      break;
+    }
+    (*it)->accept(this);
+  }
+  return 0;
+}
+```
+
+Finalmente, en el `codegen`, se agregaron las variables `continueLabel` y `breakLabel` en `ImpCodeGen`. Estas variables se utilizan para conectar las etiquetas de los bucles con `ContinueStatement`/`BreakStatement`. Para `ContinueStatement`, se conecta al label que inicia nuevamente el bucle, y para `BreakStatement`, se conecta al label que apunta al final del bucle. Los Statement tendrán el siguiente codegen:
+
+```cpp
+int ImpCodeGen::visit(ContinueStatement* s) {
+  codegen(nolabel, "goto", this->continueLabel);
+  return 0;
+}
+
+int ImpCodeGen::visit(BreakStatement* s) {
+  codegen(nolabel, "goto", this->breakLabel);
+  return 0;
+}
+```
+
+Es importante mencionar que esta implementación de `break` y `continue` tiene limitaciones. La principal es que no se puede generar un bucle dentro de otro, ya que se sobrescribirían las variables `continueLabel` y `breakLabel`, perdiendo los puntos de referencia para definir el codegen. Otra limitación es que, para el interpreter, las instrucciones `continue` y `break` deben estar dentro de un `IfStatement` que solo contenga esa instrucción. Esta decisión se tomó para asegurar que al finalizar la lectura del `IfStatement`, las variables `continueFlag` y `breakFlag` se mantengan en true, permitiendo volver al bucle `while` y afectarlo. Estas limitaciones surgen al intentar conectar los nuevos Statements con sus respectivos bucles. Una solución potencial sería generar un tipo de entorno que almacene cada `continue` y `break` en su bucle padre, guardando los labels de inicio y salida del bucle para evitar sobrescribirlos y permitir una conexión más segura y personalizada entre Statements.
