@@ -99,7 +99,7 @@ int ImpCodeGen::visit(ForStatement* s) {
   return 0;
 }
 ```
-Además de lo anteriormente mencionado, hemos ampliado la funcionalidad del visitor en lo que respecta a las expresiones binarias, introduciendo casos para abordar las operaciones lógicas AND y OR. Con esto se logra ampliar la gama de operaciones lógicas que puede abordar de manera eficiente el compilador. Además, hemos mejorado la compatibilidad para manejar las constantes booleanas, proporcionando un soporte más robusto y versátil para los valores true (1) y false (0) dentro del contexto del procesamiento de código.
+Además de lo mencionado anteriomente, se amplió la funcionalidad del visitor para las expresiones binarias, introduciendo casos para abordar las operaciones lógicas AND y OR. Con esto se logra ampliar la gama de operaciones lógicas que puede abordar de manera eficiente el generador de código. Además, se mejoró la compatibilidad para manejar las constantes booleanas, proporcionando un soporte más robusto y versátil para los valores true (1) y false (0) dentro del contexto del procesamiento de código.
 
 ```
 int ImpCodeGen::visit(BinaryExp* e) {
