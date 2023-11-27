@@ -64,6 +64,71 @@ StatementList *Parser::parseStatementList() {
 
 
 ### 2-Generacion de codigo 
+Para la generación de código SVM, hemos completado la implementación del visitor destinado al manejo de las instrucciones de bucle For. En este contexto, se ha introducido la generación de código para el statement For, incluyendo la inicialización, la condición de bucle, el cuerpo del bucle y el incremento. Se han utilizado etiquetas específicas para el inicio y el final del bucle, garantizando un flujo de control preciso.
+```
+int ImpCodeGen::visit(ForStatement* s) {
+  string loopStart = next_label();
+  string loopEnd = next_label();
+  
+  direcciones.add_var(s->id, siguiente_direccion++);
+
+  s->e1->accept(this);
+  
+  codegen(nolabel, "store", direcciones.lookup(s->id));
+
+  codegen(loopStart, "skip");
+
+  codegen(nolabel, "load", direcciones.lookup(s->id));
+  s->e2->accept(this);
+  codegen(nolabel, "le");
+  codegen(nolabel, "jmpz", loopEnd);
+
+  s->body->accept(this);
+
+  // Incremento
+  codegen(nolabel, "load", direcciones.lookup(s->id));
+  codegen(nolabel, "push", 1);
+  codegen(nolabel, "add");
+  codegen(nolabel, "store", direcciones.lookup(s->id));
+
+  // Salto de vuelta al inicio del bucle
+  codegen(nolabel, "goto", loopStart);
+
+  // Etiqueta de fin del bucle
+  codegen(loopEnd, "skip");
+  return 0;
+}
+```
+Además de lo anteriormente mencionado, hemos ampliado la funcionalidad del visitor en lo que respecta a las expresiones binarias, introduciendo casos para abordar las operaciones lógicas AND y OR. Con esto se logra ampliar la gama de operaciones lógicas que puede abordar de manera eficiente el compilador. Además, hemos mejorado la compatibilidad para manejar las constantes booleanas, proporcionando un soporte más robusto y versátil para los valores true (1) y false (0) dentro del contexto del procesamiento de código.
+
+```
+int ImpCodeGen::visit(BinaryExp* e) {
+  e->left->accept(this);
+  e->right->accept(this);
+  string op = "";
+  switch(e->op) {
+  case PLUS: op =  "add"; break;
+  case MINUS: op = "sub"; break;
+  case MULT:  op = "mul"; break;
+  case DIV:  op = "div"; break;
+  case LT:  op = "lt"; break;
+  case LTEQ: op = "le"; break;
+  case EQ:  op = "eq"; break;
+  case AND: op = "and"; break;
+  case OR:  op = "or"; break;
+  default: cout << "binop " << Exp::binopToString(e->op) << " not implemented" << endl;
+  }
+  codegen(nolabel, op);
+  return 0;
+}
+```
+```
+int ImpCodeGen::visit(BoolConstExp* e) {
+  codegen(nolabel, "push", (e->b) ? 1 : 0);
+  return 0;
+}
+```
+Con estas implementaciones, el generador de código SVM ahora abarca casos específicos para operaciones lógicas adicionales y ofrece un soporte más completo para expresiones booleanas en el contexto del lenguaje.
 
 ### 3-Sentencia do-while
 Para incorporar la instrucción `do while`, se crearon las clases `DoWhileStatement` y se añadió la siguiente lectura al analizador sintáctico:
