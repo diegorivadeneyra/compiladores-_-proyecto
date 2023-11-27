@@ -1,8 +1,8 @@
 var int x, n; // alegria
-x = 1; // alegria
-n = 10;// alegria
-// alegria
-x = n/x;// alegria
+x = 1; // alegria s
+n = 10;// alegria  ss
+// alegrias ss
+x = n/x;// alegriass
 print(x)// alegria 
 // alegria 
 // alegria 
